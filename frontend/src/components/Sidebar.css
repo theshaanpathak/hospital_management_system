@@ -61,3 +61,8 @@
 .logout-btn:hover {
   background-color: #b91c1c;
 }
+
+.active {
+  background-color: #334155;
+  border-radius: 5px;
+}

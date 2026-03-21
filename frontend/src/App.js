@@ -4,18 +4,15 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
+import DoctorSlots from './pages/DoctorSlots';
 import AdminDashboard from './pages/AdminDashboard';
 
-// 🔐 Protected Route Component
-function ProtectedRoute({ children, role }) {
+// 🔐 Protected Route (FIXED)
+function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
 
+  // ❌ Only check token
   if (!token) {
-    return <Navigate to="/" />;
-  }
-
-  if (role && userRole !== role) {
     return <Navigate to="/" />;
   }
 
@@ -27,41 +24,50 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* Public Routes */}
+        {/* PUBLIC */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Patient */}
+        {/* PATIENT */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute role="patient">
+            <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Doctor */}
+        {/* DOCTOR */}
         <Route
-          path="/doctor"
+          path="/doctor-dashboard"
           element={
-            <ProtectedRoute role="doctor">
+            <ProtectedRoute>
               <DoctorDashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Admin */}
+        <Route
+          path="/doctor-slots"
+          element={
+            <ProtectedRoute>
+              <DoctorSlots />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ADMIN */}
         <Route
           path="/admin"
           element={
-            <ProtectedRoute role="admin">
+            <ProtectedRoute>
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Fallback */}
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>

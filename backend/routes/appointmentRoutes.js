@@ -5,50 +5,61 @@ const db = require('../config/db');
 console.log("✅ Appointment Routes Loaded");
 
 
-
 // ----------------------
 // DEBUG: raw data
 // ----------------------
 router.get('/debug/raw', (req, res) => {
   db.query("SELECT * FROM appointments", (err, results) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.error("❌ Debug Error:", err);
+      return res.status(500).json(err);
+    }
     res.json(results);
   });
 });
 
+
 // ----------------------
-// ADD APPOINTMENT (NEW)
+// ADD APPOINTMENT
 // ----------------------
 router.post('/', (req, res) => {
-  console.log("🔥 POST /api/appointments HIT"); // ADD THIS
-  const { patient_id, doctor_id, date } = req.body;
+  const { patient_id, doctor_id, slot_id } = req.body;
 
-  console.log("📥 Incoming Data:", req.body); // 👈 ADD THIS
+  const getSlot = `SELECT * FROM doctor_slots WHERE id = ?`;
 
-  if (!patient_id || !doctor_id || !date) {
-    return res.status(400).json({ message: "All fields required" });
-  }
+  db.query(getSlot, [slot_id], (err, slotRes) => {
+    if (err) return res.status(500).json(err);
 
-  const sql = `
-    INSERT INTO appointments (patient_id, doctor_id, date, status)
-    VALUES (?, ?, ?, 'pending')
-  `;
+    const slot = slotRes[0];
 
-  db.query(sql, [patient_id, doctor_id, date], (err, result) => {
-    if (err) {
-      console.error("❌ Insert Error FULL:", err); // 👈 IMPORTANT
-      return res.status(500).json({
-      message: "Database error",
-      error: err.message
-      });
+    if (!slot || slot.is_booked) {
+      return res.status(400).json({ message: "Slot not available" });
     }
 
-    res.json({
-      message: "Appointment booked successfully",
-      appointment_id: result.insertId
-    });
+    const insert = `
+      INSERT INTO appointments (patient_id, doctor_id, date, status, slot_id)
+      VALUES (?, ?, ?, 'pending', ?)
+    `;
+
+    db.query(
+      insert,
+      [patient_id, doctor_id, slot.slot_time, slot_id],
+      (err, result) => {
+        if (err) return res.status(500).json(err);
+
+        // mark slot booked
+        db.query(
+          `UPDATE doctor_slots SET is_booked = TRUE WHERE id = ?`,
+          [slot_id]
+        );
+
+        res.json({ message: "Appointment booked via slot" });
+      }
+    );
   });
 });
+
+
 // ----------------------
 // GET ALL APPOINTMENTS
 // ----------------------
@@ -67,13 +78,17 @@ router.get('/', (req, res) => {
 
   db.query(sql, (err, results) => {
     if (err) {
-      console.error("Fetch Error:", err);
+      console.error("❌ Fetch Error:", err);
       return res.status(500).json(err);
     }
     res.json(results);
   });
 });
 
+
+// ----------------------
+// GET APPOINTMENTS BY PATIENT
+// ----------------------
 router.get('/patient/:patientId', (req, res) => {
   const { patientId } = req.params;
 
@@ -88,10 +103,14 @@ router.get('/patient/:patientId', (req, res) => {
   `;
 
   db.query(sql, [patientId], (err, results) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.error("❌ Patient Fetch Error:", err);
+      return res.status(500).json(err);
+    }
     res.json(results);
   });
 });
+
 
 // ----------------------
 // GET APPOINTMENTS BY DOCTOR
@@ -111,11 +130,50 @@ router.get('/doctor/:doctorId', (req, res) => {
 
   db.query(sql, [doctorId], (err, results) => {
     if (err) {
-      console.error(err);
+      console.error("❌ Doctor Fetch Error:", err);
       return res.status(500).json(err);
     }
     res.json(results);
   });
 });
+
+
+// ----------------------
+// UPDATE APPOINTMENT STATUS (APPROVE / REJECT)
+// ----------------------
+router.put('/:id/status', (req, res) => {
+  console.log("🔥 STATUS ROUTE HIT");
+
+  const appointmentId = req.params.id;
+  const { status } = req.body;
+
+  console.log("📥 Status Update:", appointmentId, status);
+
+  // Validate input
+  if (!status || !['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ message: 'Invalid status value' });
+  }
+
+  const sql = `UPDATE appointments SET status = ? WHERE id = ?`;
+
+  db.query(sql, [status, appointmentId], (err, result) => {
+    if (err) {
+      console.error("❌ Update Error:", err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    // Check if appointment exists
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    res.json({
+      message: 'Appointment updated successfully',
+      appointmentId,
+      newStatus: status
+    });
+  });
+});
+
 
 module.exports = router;

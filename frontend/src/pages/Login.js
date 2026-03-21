@@ -11,7 +11,6 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setLoading(true);
 
     try {
@@ -23,11 +22,13 @@ function Login() {
       localStorage.setItem('token', token);
       localStorage.setItem('role', user.role);
 
-      // 🔀 Role-based redirect
+      console.log("✅ Login success:", user.role);
+
+      // ✅ FIXED ROUTES
       if (user.role === 'patient') {
         navigate('/dashboard');
       } else if (user.role === 'doctor') {
-        navigate('/doctor');
+        navigate('/doctor-dashboard'); // 🔥 FIX HERE
       } else if (user.role === 'admin') {
         navigate('/admin');
       }

@@ -14,21 +14,27 @@ function Sidebar({ logout }) {
 
       <ul className="sidebar-menu">
 
-        {/* Patient */}
+        {/* PATIENT */}
         {role === 'patient' && (
           <li className={isActive('/dashboard') ? 'active' : ''}>
             <Link to="/dashboard">🏠 Dashboard</Link>
           </li>
         )}
 
-        {/* Doctor */}
+        {/* DOCTOR */}
         {role === 'doctor' && (
-          <li className={isActive('/doctor') ? 'active' : ''}>
-            <Link to="/doctor">👨‍⚕️ Doctor Panel</Link>
-          </li>
+          <>
+            <li className={isActive('/doctor-dashboard') ? 'active' : ''}>
+              <Link to="/doctor-dashboard">🏥 Appointments</Link>
+            </li>
+
+            <li className={isActive('/doctor-slots') ? 'active' : ''}>
+              <Link to="/doctor-slots">⏰ Manage Slots</Link>
+            </li>
+          </>
         )}
 
-        {/* Admin */}
+        {/* ADMIN */}
         {role === 'admin' && (
           <li className={isActive('/admin') ? 'active' : ''}>
             <Link to="/admin">⚙️ Admin Panel</Link>

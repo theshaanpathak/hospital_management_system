@@ -6,17 +6,20 @@ import Sidebar from '../components/Sidebar';
 function Dashboard() {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
+
   const [doctorId, setDoctorId] = useState('');
-  const [date, setDate] = useState('');
+  const [slots, setSlots] = useState([]);
+  const [slotId, setSlotId] = useState('');
 
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [booking, setBooking] = useState(false);
 
   const navigate = useNavigate();
 
   // ----------------------
-  // Check Auth + Load Data
+  // Auth + Initial Load
   // ----------------------
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -46,7 +49,7 @@ function Dashboard() {
   };
 
   // ----------------------
-  // Load Appointments (ONLY CURRENT USER)
+  // Load Appointments
   // ----------------------
   const loadAppointments = async () => {
     try {
@@ -70,13 +73,48 @@ function Dashboard() {
   };
 
   // ----------------------
-  // Book Appointment (FIXED)
+  // Load Slots (FIXED + DEBUG)
+  // ----------------------
+  const loadSlots = async (doctorId) => {
+    try {
+      setLoadingSlots(true);
+
+      console.log("🔥 Loading slots for doctor:", doctorId);
+
+      const res = await API.get(`/slots/${doctorId}`);
+
+      console.log("🔥 Slots response:", res.data);
+
+      setSlots(res.data || []);
+
+    } catch (err) {
+      console.error("❌ Slot Load Error:", err);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  // ----------------------
+  // Handle Doctor Change (IMPORTANT FIX)
+  // ----------------------
+  const handleDoctorChange = (id) => {
+    setDoctorId(id);
+    setSlotId('');
+    setSlots([]); // reset previous slots
+
+    if (id) {
+      loadSlots(id); // ✅ ensures slots load properly
+    }
+  };
+
+  // ----------------------
+  // Book Appointment
   // ----------------------
   const handleBooking = async (e) => {
     e.preventDefault();
 
-    if (!doctorId || !date) {
-      alert('Please select doctor and date');
+    if (!doctorId || !slotId) {
+      alert('Please select doctor and slot');
       return;
     }
 
@@ -87,33 +125,27 @@ function Dashboard() {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const userId = payload.id;
 
-      // ✅ Get correct patient_id
       const patientRes = await API.get(`/patient/me?user_id=${userId}`);
       const patientId = patientRes.data.patient_id;
 
-      // ✅ FIXED DATE FORMAT (MySQL compatible)
-      const formattedDate = new Date(date)
-        .toISOString()
-        .slice(0, 19)
-        .replace('T', ' ');
-
-      // ✅ Correct API call
       await API.post('/appointments', {
         patient_id: Number(patientId),
         doctor_id: Number(doctorId),
-        date: formattedDate
+        slot_id: Number(slotId)
       });
 
       alert('Appointment booked successfully');
 
+      // reset
       setDoctorId('');
-      setDate('');
+      setSlotId('');
+      setSlots([]);
 
       loadAppointments();
 
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || 'Booking failed');
+      alert(err.response?.data?.message || 'Booking failed');
     } finally {
       setBooking(false);
     }
@@ -127,13 +159,20 @@ function Dashboard() {
     navigate('/');
   };
 
+  // ----------------------
+  // Badge Styling
+  // ----------------------
+  const getBadge = (status) => {
+    if (status === 'approved') return 'bg-success';
+    if (status === 'rejected') return 'bg-danger';
+    return 'bg-warning text-dark';
+  };
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
 
-      {/* Sidebar */}
       <Sidebar logout={logout} />
 
-      {/* Main Content */}
       <div style={{ flex: 1, padding: '25px', background: '#f1f5f9' }}>
 
         <h2 className="mb-4">Patient Dashboard</h2>
@@ -147,10 +186,11 @@ function Dashboard() {
           <div className="card-body">
             <form onSubmit={handleBooking}>
 
+              {/* DOCTOR */}
               <select
                 className="form-control mb-3"
                 value={doctorId}
-                onChange={(e) => setDoctorId(e.target.value)}
+                onChange={(e) => handleDoctorChange(e.target.value)}
               >
                 <option value="">Select Doctor</option>
                 {doctors.map(doc => (
@@ -160,12 +200,28 @@ function Dashboard() {
                 ))}
               </select>
 
-              <input
-                type="datetime-local"
-                className="form-control mb-3"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              {/* SLOT */}
+              {doctorId && (
+                <select
+                  className="form-control mb-3"
+                  value={slotId}
+                  onChange={(e) => setSlotId(e.target.value)}
+                >
+                  <option value="">Select Slot</option>
+
+                  {loadingSlots ? (
+                    <option>Loading slots...</option>
+                  ) : slots.length === 0 ? (
+                    <option>No slots available</option>
+                  ) : (
+                    slots.map(slot => (
+                      <option key={slot.id} value={slot.id}>
+                        {new Date(slot.slot_time).toLocaleString()}
+                      </option>
+                    ))
+                  )}
+                </select>
+              )}
 
               <button
                 className="btn btn-primary w-100"
@@ -175,34 +231,6 @@ function Dashboard() {
               </button>
 
             </form>
-          </div>
-        </div>
-
-        {/* DOCTORS */}
-        <div className="card mb-4 shadow-sm">
-          <div className="card-header bg-primary text-white fw-bold">
-            Doctors
-          </div>
-
-          <div className="card-body">
-            {loadingDoctors ? (
-              <p>Loading doctors...</p>
-            ) : doctors.length === 0 ? (
-              <p>No doctors available</p>
-            ) : (
-              <div className="row">
-                {doctors.map(doc => (
-                  <div className="col-md-4 mb-3" key={doc.id}>
-                    <div className="card border-0 shadow-sm h-100">
-                      <div className="card-body">
-                        <h5>{doc.name}</h5>
-                        <p className="text-muted">{doc.specialization}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -233,7 +261,7 @@ function Dashboard() {
                       <td>{app.doctor_name}</td>
                       <td>{new Date(app.date).toLocaleString()}</td>
                       <td>
-                        <span className="badge bg-secondary">
+                        <span className={`badge ${getBadge(app.status)}`}>
                           {app.status}
                         </span>
                       </td>

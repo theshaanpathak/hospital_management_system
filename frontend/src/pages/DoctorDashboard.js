@@ -5,79 +5,110 @@ import Sidebar from '../components/Sidebar';
 
 function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
+  const [slots, setSlots] = useState([]); // ✅ NEW
+
   const [loading, setLoading] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false); // ✅ NEW
+  const [updatingId, setUpdatingId] = useState(null);
 
   const navigate = useNavigate();
 
   // ----------------------
-  // Auth Check + Load Data
+  // AUTH CHECK
   // ----------------------
   useEffect(() => {
-    const role = localStorage.getItem('role');
-
-    if (role !== 'doctor') {
-      navigate('/');
-      return;
-    }
-
-    loadAppointments();
-  }, []);
-
-  // ----------------------
-  // Load Appointments
-  // ----------------------
-  const loadAppointments = async () => {
-  setLoading(true);
-
-  try {
-    console.log("🚀 Loading appointments started");
-
     const token = localStorage.getItem('token');
 
+    console.log("🔥 Token:", token);
+
     if (!token) {
-      console.log("❌ No token");
       navigate('/');
       return;
     }
 
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userId = payload.id;
+    loadAll(); // ✅ load both
 
-    console.log("👤 userId:", userId);
+  }, [navigate]);
 
-    // STEP 1: get doctor_id
-    const docRes = await API.get(`/doctors/user/${userId}`);
-    console.log("📥 doctor API response:", docRes);
+  // ----------------------
+  // GET DOCTOR ID
+  // ----------------------
+  const getDoctorId = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const userId = payload.id;
 
-    const doctorId = docRes?.data?.doctor_id;
+      const docRes = await API.get(`/doctors/user/${userId}`);
+      return docRes.data.doctor_id;
 
-    console.log("✅ doctorId:", doctorId);
+    } catch (err) {
+      console.error("❌ getDoctorId error:", err);
+      throw err;
+    }
+  };
 
-    if (!doctorId) {
-      throw new Error("Doctor ID not found");
+  // ----------------------
+  // LOAD BOTH DATA
+  // ----------------------
+  const loadAll = async () => {
+    setLoading(true);
+    setLoadingSlots(true);
+
+    try {
+      const doctorId = await getDoctorId();
+
+      const [appRes, slotRes] = await Promise.all([
+        API.get(`/appointments/doctor/${doctorId}`),
+        API.get(`/slots/${doctorId}`)
+      ]);
+
+      setAppointments(appRes.data || []);
+      setSlots(slotRes.data || []);
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load data");
     }
 
-    // STEP 2: get appointments
-    const res = await API.get(`/appointments/doctor/${doctorId}`);
-    console.log("📥 appointments API response:", res);
+    setLoading(false);
+    setLoadingSlots(false);
+  };
 
-    setAppointments(res.data || []);
-
-  } catch (err) {
-    console.error("❌ FULL ERROR:", err);
-
-    alert(
-      err.response?.data?.message ||
-      err.message ||
-      "Something went wrong"
-    );
-  }
-
-  console.log("✅ Loading finished");
-  setLoading(false);
-};
   // ----------------------
-  // Logout
+  // UPDATE STATUS
+  // ----------------------
+  const updateStatus = async (id, status) => {
+    setUpdatingId(id);
+
+    try {
+      await API.put(`/appointments/${id}/status`, { status });
+
+      setAppointments(prev =>
+        prev.map(app =>
+          app.id === id ? { ...app, status } : app
+        )
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update status");
+    }
+
+    setUpdatingId(null);
+  };
+
+  // ----------------------
+  // BADGE STYLE
+  // ----------------------
+  const getBadge = (status) => {
+    if (status === 'approved') return 'bg-success';
+    if (status === 'rejected') return 'bg-danger';
+    return 'bg-warning text-dark';
+  };
+
+  // ----------------------
+  // LOGOUT
   // ----------------------
   const logout = () => {
     localStorage.clear();
@@ -87,15 +118,16 @@ function DoctorDashboard() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
 
-      {/* Sidebar */}
       <Sidebar logout={logout} />
 
-      {/* Main Content */}
       <div style={{ flex: 1, padding: '25px', background: '#f1f5f9' }}>
 
         <h2 className="mb-4">Doctor Dashboard</h2>
 
-        <div className="card shadow-sm">
+        {/* ---------------------- */}
+        {/* APPOINTMENTS */}
+        {/* ---------------------- */}
+        <div className="card shadow-sm mb-4">
           <div className="card-header bg-info text-white fw-bold">
             Patient Appointments
           </div>
@@ -108,11 +140,12 @@ function DoctorDashboard() {
               <p>No appointments found</p>
             ) : (
               <table className="table table-bordered table-hover">
-                <thead>
+                <thead className="table-dark">
                   <tr>
                     <th>Patient</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
 
@@ -122,15 +155,64 @@ function DoctorDashboard() {
                       <td>{app.patient_name}</td>
                       <td>{new Date(app.date).toLocaleString()}</td>
                       <td>
-                        <span className="badge bg-secondary">
+                        <span className={`badge ${getBadge(app.status)}`}>
                           {app.status}
                         </span>
+                      </td>
+                      <td>
+                        {app.status === 'pending' ? (
+                          <>
+                            <button
+                              className="btn btn-success btn-sm me-2"
+                              disabled={updatingId === app.id}
+                              onClick={() => updateStatus(app.id, 'approved')}
+                            >
+                              ✔ Approve
+                            </button>
+
+                            <button
+                              className="btn btn-danger btn-sm"
+                              disabled={updatingId === app.id}
+                              onClick={() => updateStatus(app.id, 'rejected')}
+                            >
+                              ✖ Reject
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-muted">No action</span>
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-
               </table>
+            )}
+
+          </div>
+        </div>
+
+        {/* ---------------------- */}
+        {/* SLOTS LIST (NEW) */}
+        {/* ---------------------- */}
+        <div className="card shadow-sm">
+          <div className="card-header bg-dark text-white fw-bold">
+            My Slots
+          </div>
+
+          <div className="card-body">
+
+            {loadingSlots ? (
+              <p>Loading slots...</p>
+            ) : slots.length === 0 ? (
+              <p>No slots available</p>
+            ) : (
+              <ul className="list-group">
+                {slots.map(slot => (
+                  <li key={slot.id} className="list-group-item">
+                    {new Date(slot.slot_time).toLocaleString()}
+                  </li>
+                ))}
+              </ul>
             )}
 
           </div>
@@ -140,5 +222,6 @@ function DoctorDashboard() {
     </div>
   );
 }
+
 
 export default DoctorDashboard;
