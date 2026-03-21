@@ -1,0 +1,52 @@
+I am building a Hospital Management System using:
+
+Backend: Node.js + Express + MySQL
+Frontend: React + Bootstrap
+
+Current status of my project:
+
+* User authentication (JWT) is implemented
+* Roles: admin, doctor, patient
+* Database tables: users, patients, doctors, appointments
+* Registration creates user + patient/doctor entry
+* Login stores token and role
+* Patient dashboard:
+
+  * Can view doctors
+  * Can book appointments
+  * Uses correct patient_id mapping (patients.id, not users.id)
+  * Date is formatted for MySQL (YYYY-MM-DD HH:MM:SS)
+* Doctor dashboard:
+
+  * Fetches doctor_id using user_id
+  * Shows only that doctor’s appointments
+* Backend APIs working:
+
+  * /api/auth
+  * /api/patient/me
+  * /api/doctors
+  * /api/doctors/user/:userId
+  * /api/appointments
+  * /api/appointments/patient/:id
+  * /api/appointments/doctor/:id
+
+All major bugs are fixed:
+
+* Route issues
+* Foreign key mapping (user_id vs patient_id/doctor_id)
+* Date format issues
+* Loading state issues
+
+Now I want to continue improving the project.
+
+Help me implement the next feature step-by-step with full working code:
+
+👉 Add Doctor Approve / Reject Appointment functionality
+
+* Add buttons in doctor dashboard
+* Update appointment status in backend
+* Reflect changes in UI
+* Use clean UI (Bootstrap badges/buttons)
+
+Then suggest next improvements after that.
+
