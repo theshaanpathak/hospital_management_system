@@ -1,6 +1,9 @@
+
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+
+const upload = require('../middleware/upload');
 
 console.log("✅ Appointment Routes Loaded");
 
@@ -44,10 +47,9 @@ router.post('/', (req, res) => {
     db.query(
       insert,
       [patient_id, doctor_id, slot.slot_time, slot_id],
-      (err, result) => {
+      (err) => {
         if (err) return res.status(500).json(err);
 
-        // mark slot booked
         db.query(
           `UPDATE doctor_slots SET is_booked = TRUE WHERE id = ?`,
           [slot_id]
@@ -77,36 +79,7 @@ router.get('/', (req, res) => {
   `;
 
   db.query(sql, (err, results) => {
-    if (err) {
-      console.error("❌ Fetch Error:", err);
-      return res.status(500).json(err);
-    }
-    res.json(results);
-  });
-});
-
-
-// ----------------------
-// GET APPOINTMENTS BY PATIENT
-// ----------------------
-router.get('/patient/:patientId', (req, res) => {
-  const { patientId } = req.params;
-
-  const sql = `
-    SELECT a.*, 
-           u2.name AS doctor_name
-    FROM appointments a
-    LEFT JOIN doctors d ON a.doctor_id = d.id
-    LEFT JOIN users u2 ON d.user_id = u2.id
-    WHERE a.patient_id = ?
-    ORDER BY a.date DESC
-  `;
-
-  db.query(sql, [patientId], (err, results) => {
-    if (err) {
-      console.error("❌ Patient Fetch Error:", err);
-      return res.status(500).json(err);
-    }
+    if (err) return res.status(500).json(err);
     res.json(results);
   });
 });
@@ -129,51 +102,106 @@ router.get('/doctor/:doctorId', (req, res) => {
   `;
 
   db.query(sql, [doctorId], (err, results) => {
-    if (err) {
-      console.error("❌ Doctor Fetch Error:", err);
-      return res.status(500).json(err);
-    }
+    if (err) return res.status(500).json(err);
     res.json(results);
   });
 });
 
 
 // ----------------------
-// UPDATE APPOINTMENT STATUS (APPROVE / REJECT)
+// ✅ ADDED: GET APPOINTMENTS BY PATIENT
 // ----------------------
-router.put('/:id/status', (req, res) => {
-  console.log("🔥 STATUS ROUTE HIT");
+router.get('/patient/:patientId', (req, res) => {
+  const { patientId } = req.params;
 
-  const appointmentId = req.params.id;
-  const { status } = req.body;
+  const sql = `
+    SELECT a.*, 
+           u.name AS doctor_name
+    FROM appointments a
+    LEFT JOIN doctors d ON a.doctor_id = d.id
+    LEFT JOIN users u ON d.user_id = u.id
+    WHERE a.patient_id = ?
+    ORDER BY a.date DESC
+  `;
 
-  console.log("📥 Status Update:", appointmentId, status);
-
-  // Validate input
-  if (!status || !['approved', 'rejected'].includes(status)) {
-    return res.status(400).json({ message: 'Invalid status value' });
-  }
-
-  const sql = `UPDATE appointments SET status = ? WHERE id = ?`;
-
-  db.query(sql, [status, appointmentId], (err, result) => {
+  db.query(sql, [patientId], (err, results) => {
     if (err) {
-      console.error("❌ Update Error:", err);
-      return res.status(500).json({ message: 'Database error' });
+      console.error("❌ Patient Appointment Error:", err);
+      return res.status(500).json(err);
     }
 
-    // Check if appointment exists
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Appointment not found' });
-    }
-
-    res.json({
-      message: 'Appointment updated successfully',
-      appointmentId,
-      newStatus: status
-    });
+    res.json(results);
   });
 });
 
 
+// ----------------------
+// SESSION DETAILS
+// ----------------------
+router.post('/details/:appointmentId', upload.single('file'), (req, res) => {
+  const { appointmentId } = req.params;
+  const { notes, prescription } = req.body;
+  const file = req.file ? req.file.filename : null;
+
+  const checkSql = `SELECT * FROM appointment_details WHERE appointment_id = ?`;
+
+  db.query(checkSql, [appointmentId], (err, results) => {
+    if (results.length > 0) {
+      const updateSql = `
+        UPDATE appointment_details 
+        SET notes = ?, prescription = ?, 
+            attachment = COALESCE(?, attachment)
+        WHERE appointment_id = ?
+      `;
+
+      db.query(updateSql, [notes, prescription, file, appointmentId], () => {
+        res.json({ message: "Updated successfully" });
+      });
+    } else {
+      const insertSql = `
+        INSERT INTO appointment_details 
+        (appointment_id, notes, prescription, attachment)
+        VALUES (?, ?, ?, ?)
+      `;
+
+      db.query(insertSql, [appointmentId, notes, prescription, file], () => {
+        res.json({ message: "Saved successfully" });
+      });
+    }
+  });
+});
+
+
+// ----------------------
+// GET SESSION DETAILS
+// ----------------------
+router.get('/details/:appointmentId', (req, res) => {
+  const { appointmentId } = req.params;
+
+  db.query(
+    "SELECT * FROM appointment_details WHERE appointment_id = ? ORDER BY id DESC LIMIT 1",
+    [appointmentId],
+    (err, results) => {
+      if (results.length === 0) return res.json(null);
+      res.json(results[0]);
+    }
+  );
+});
+
+
+// ----------------------
+// UPDATE STATUS
+// ----------------------
+router.put('/:id/status', (req, res) => {
+  const { status } = req.body;
+
+  db.query(
+    "UPDATE appointments SET status = ? WHERE id = ?",
+    [status, req.params.id],
+    () => res.json({ message: "Updated" })
+  );
+});
+
+
 module.exports = router;
+

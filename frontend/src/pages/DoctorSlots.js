@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -7,15 +8,11 @@ function DoctorSlots() {
   const [slotTime, setSlotTime] = useState('');
   const [adding, setAdding] = useState(false);
 
-  // ✅ NEW STATE
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   const navigate = useNavigate();
 
-  // ----------------------
-  // GET DOCTOR ID
-  // ----------------------
   const getDoctorId = async () => {
     const token = localStorage.getItem('token');
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -25,21 +22,13 @@ function DoctorSlots() {
     return res.data.doctor_id;
   };
 
-  // ----------------------
-  // LOAD SLOTS (NEW)
-  // ----------------------
   const loadSlots = async () => {
     setLoadingSlots(true);
 
     try {
       const doctorId = await getDoctorId();
 
-      console.log("🔥 Fetching slots for:", doctorId);
-
       const res = await API.get(`/slots/${doctorId}`);
-
-      console.log("🔥 Slots:", res.data);
-
       setSlots(res.data || []);
 
     } catch (err) {
@@ -49,16 +38,10 @@ function DoctorSlots() {
     setLoadingSlots(false);
   };
 
-  // ----------------------
-  // LOAD ON PAGE OPEN
-  // ----------------------
   useEffect(() => {
     loadSlots();
   }, []);
 
-  // ----------------------
-  // ADD SLOT
-  // ----------------------
   const addSlot = async () => {
     if (!slotTime) {
       alert("Select date & time");
@@ -82,8 +65,6 @@ function DoctorSlots() {
 
       alert("Slot added successfully");
       setSlotTime('');
-
-      // ✅ REFRESH SLOTS AFTER ADD
       loadSlots();
 
     } catch (err) {
@@ -94,9 +75,20 @@ function DoctorSlots() {
     setAdding(false);
   };
 
-  // ----------------------
-  // LOGOUT
-  // ----------------------
+  // ✅ NEW: DELETE SLOT
+  const deleteSlot = async (slotId) => {
+    if (!window.confirm("Delete this slot?")) return;
+
+    try {
+      await API.delete(`/slots/${slotId}`);
+      alert("Slot deleted");
+      loadSlots(); // refresh
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete slot");
+    }
+  };
+
   const logout = () => {
     localStorage.clear();
     navigate('/');
@@ -111,9 +103,6 @@ function DoctorSlots() {
 
         <h2 className="mb-4">Manage Slots</h2>
 
-        {/* ---------------------- */}
-        {/* ADD SLOT */}
-        {/* ---------------------- */}
         <div className="card shadow-sm mb-4">
           <div className="card-header bg-success text-white fw-bold">
             Add Available Slot
@@ -139,9 +128,7 @@ function DoctorSlots() {
           </div>
         </div>
 
-        {/* ---------------------- */}
-        {/* SLOT LIST (NEW) */}
-        {/* ---------------------- */}
+        {/* SLOT LIST */}
         <div className="card shadow-sm">
           <div className="card-header bg-dark text-white fw-bold">
             My Slots
@@ -156,8 +143,22 @@ function DoctorSlots() {
             ) : (
               <ul className="list-group">
                 {slots.map(slot => (
-                  <li key={slot.id} className="list-group-item">
-                    {new Date(slot.slot_time).toLocaleString()}
+                  <li
+                    key={slot.id}
+                    className="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <span>
+                      {new Date(slot.slot_time).toLocaleString()}
+                    </span>
+
+                    {/* ✅ DELETE BUTTON */}
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => deleteSlot(slot.id)}
+                    >
+                      Delete
+                    </button>
+
                   </li>
                 ))}
               </ul>

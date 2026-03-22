@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +17,10 @@ function Dashboard() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [booking, setBooking] = useState(false);
 
+  const [filter, setFilter] = useState('all');
+
   const navigate = useNavigate();
 
-  // ----------------------
-  // Auth + Initial Load
-  // ----------------------
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -33,24 +33,19 @@ function Dashboard() {
     loadAppointments();
   }, [navigate]);
 
-  // ----------------------
-  // Load Doctors
-  // ----------------------
   const loadDoctors = async () => {
     try {
       setLoadingDoctors(true);
       const res = await API.get('/doctors');
       setDoctors(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Doctors Error:", err);
     } finally {
       setLoadingDoctors(false);
     }
   };
 
-  // ----------------------
-  // Load Appointments
-  // ----------------------
+  // ✅ FIXED + DEBUG
   const loadAppointments = async () => {
     try {
       setLoadingAppointments(true);
@@ -59,57 +54,58 @@ function Dashboard() {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const userId = payload.id;
 
+      console.log("👤 User ID:", userId);
+
       const patientRes = await API.get(`/patient/me?user_id=${userId}`);
-      const patientId = patientRes.data.patient_id;
+
+      console.log("🧾 Patient Response:", patientRes.data);
+
+      const patientId = patientRes.data?.patient_id;
+
+      if (!patientId) {
+        console.error("❌ patient_id not found");
+        setAppointments([]);
+        return;
+      }
+
+      console.log("🆔 Patient ID:", patientId);
 
       const res = await API.get(`/appointments/patient/${patientId}`);
-      setAppointments(res.data);
+
+      console.log("📅 Appointments:", res.data);
+
+      setAppointments(res.data || []);
 
     } catch (err) {
-      console.error(err);
+      console.error("❌ Appointment Load Error:", err);
+      setAppointments([]);
     } finally {
       setLoadingAppointments(false);
     }
   };
 
-  // ----------------------
-  // Load Slots (FIXED + DEBUG)
-  // ----------------------
   const loadSlots = async (doctorId) => {
     try {
       setLoadingSlots(true);
-
-      console.log("🔥 Loading slots for doctor:", doctorId);
-
       const res = await API.get(`/slots/${doctorId}`);
-
-      console.log("🔥 Slots response:", res.data);
-
       setSlots(res.data || []);
-
     } catch (err) {
-      console.error("❌ Slot Load Error:", err);
+      console.error("❌ Slot Error:", err);
     } finally {
       setLoadingSlots(false);
     }
   };
 
-  // ----------------------
-  // Handle Doctor Change (IMPORTANT FIX)
-  // ----------------------
   const handleDoctorChange = (id) => {
     setDoctorId(id);
     setSlotId('');
-    setSlots([]); // reset previous slots
+    setSlots([]);
 
     if (id) {
-      loadSlots(id); // ✅ ensures slots load properly
+      loadSlots(id);
     }
   };
 
-  // ----------------------
-  // Book Appointment
-  // ----------------------
   const handleBooking = async (e) => {
     e.preventDefault();
 
@@ -136,7 +132,6 @@ function Dashboard() {
 
       alert('Appointment booked successfully');
 
-      // reset
       setDoctorId('');
       setSlotId('');
       setSlots([]);
@@ -151,22 +146,21 @@ function Dashboard() {
     }
   };
 
-  // ----------------------
-  // Logout
-  // ----------------------
   const logout = () => {
     localStorage.clear();
     navigate('/');
   };
 
-  // ----------------------
-  // Badge Styling
-  // ----------------------
   const getBadge = (status) => {
     if (status === 'approved') return 'bg-success';
     if (status === 'rejected') return 'bg-danger';
     return 'bg-warning text-dark';
   };
+
+  const filteredAppointments =
+    filter === 'all'
+      ? appointments
+      : appointments.filter(app => app.status === filter);
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -186,7 +180,6 @@ function Dashboard() {
           <div className="card-body">
             <form onSubmit={handleBooking}>
 
-              {/* DOCTOR */}
               <select
                 className="form-control mb-3"
                 value={doctorId}
@@ -200,7 +193,6 @@ function Dashboard() {
                 ))}
               </select>
 
-              {/* SLOT */}
               {doctorId && (
                 <select
                   className="form-control mb-3"
@@ -223,10 +215,7 @@ function Dashboard() {
                 </select>
               )}
 
-              <button
-                className="btn btn-primary w-100"
-                disabled={booking}
-              >
+              <button className="btn btn-primary w-100" disabled={booking}>
                 {booking ? 'Booking...' : 'Book Appointment'}
               </button>
 
@@ -241,10 +230,25 @@ function Dashboard() {
           </div>
 
           <div className="card-body">
+
+            <div className="mb-3">
+              {['all', 'pending', 'approved', 'rejected'].map(type => (
+                <button
+                  key={type}
+                  className={`btn btn-sm me-2 ${
+                    filter === type ? 'btn-primary' : 'btn-outline-primary'
+                  }`}
+                  onClick={() => setFilter(type)}
+                >
+                  {type.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
             {loadingAppointments ? (
               <p>Loading appointments...</p>
-            ) : appointments.length === 0 ? (
-              <p>No appointments found</p>
+            ) : filteredAppointments.length === 0 ? (
+              <p>❌ No appointments found (Check console)</p>
             ) : (
               <table className="table table-bordered table-hover">
                 <thead>
@@ -256,7 +260,7 @@ function Dashboard() {
                 </thead>
 
                 <tbody>
-                  {appointments.map(app => (
+                  {filteredAppointments.map(app => (
                     <tr key={app.id}>
                       <td>{app.doctor_name}</td>
                       <td>{new Date(app.date).toLocaleString()}</td>
@@ -280,3 +284,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+

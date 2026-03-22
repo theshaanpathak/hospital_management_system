@@ -1,11 +1,23 @@
-import { Link, useLocation } from 'react-router-dom';
+
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
 function Sidebar({ logout }) {
   const role = localStorage.getItem('role');
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => location.pathname.startsWith(path);
+
+  const handleLogout = () => {
+    if (logout) {
+      logout();
+    } else {
+      localStorage.clear();
+      navigate('/');
+    }
+  };
 
   return (
     <div className="sidebar">
@@ -24,10 +36,17 @@ function Sidebar({ logout }) {
         {/* DOCTOR */}
         {role === 'doctor' && (
           <>
+            {/* ✅ FIXED: dashboard (approve/reject) */}
             <li className={isActive('/doctor-dashboard') ? 'active' : ''}>
               <Link to="/doctor-dashboard">🏥 Appointments</Link>
             </li>
 
+            {/* ✅ NEW: sessions page */}
+            <li className={isActive('/doctor/sessions') ? 'active' : ''}>
+              <Link to="/doctor/sessions">📋 Sessions</Link>
+            </li>
+
+            {/* existing */}
             <li className={isActive('/doctor-slots') ? 'active' : ''}>
               <Link to="/doctor-slots">⏰ Manage Slots</Link>
             </li>
@@ -43,7 +62,7 @@ function Sidebar({ logout }) {
 
       </ul>
 
-      <button className="logout-btn" onClick={logout}>
+      <button className="logout-btn" onClick={handleLogout}>
         Logout
       </button>
 
@@ -52,3 +71,4 @@ function Sidebar({ logout }) {
 }
 
 export default Sidebar;
+

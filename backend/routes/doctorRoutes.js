@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
@@ -33,7 +34,6 @@ router.get('/', (req, res) => {
 router.get('/user/:userId', (req, res) => {
   const { userId } = req.params;
 
-  // ✅ validation
   if (!userId || isNaN(userId)) {
     return res.status(400).json({ message: "Invalid userId" });
   }
@@ -60,6 +60,44 @@ router.get('/user/:userId', (req, res) => {
 });
 
 // ----------------------
+// Get Approved Appointments for Doctor
+// ----------------------
+router.get('/:doctorId/approved-appointments', (req, res) => {
+  const { doctorId } = req.params;
+
+  if (!doctorId || isNaN(doctorId)) {
+    return res.status(400).json({ message: "Invalid doctorId" });
+  }
+
+  const sql = `
+    SELECT 
+      a.id,
+      a.date,  -- ✅ FIXED HERE
+      a.status,
+      p.id AS patient_id,
+      u.name AS patient_name
+    FROM appointments a
+    JOIN patients p ON a.patient_id = p.id
+    JOIN users u ON p.user_id = u.id
+    WHERE a.doctor_id = ? AND a.status = 'approved'
+    ORDER BY a.date DESC  -- ✅ FIXED HERE
+  `;
+
+  db.query(sql, [doctorId], (err, results) => {
+    if (err) {
+      console.error("❌ DB Error (approved appointments):", err);
+      return res.status(500).json({
+        message: "Database error",
+        error: err.message
+      });
+    }
+
+    res.json(results);
+  });
+});
+
+// ----------------------
 // Export Router
 // ----------------------
 module.exports = router;
+

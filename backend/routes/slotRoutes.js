@@ -51,3 +51,6 @@ router.delete('/:id', (req, res) => {
     res.json({ message: "Deleted" });
   });
 });
+
+// ✅ FIX (ONLY THIS LINE ADDED)
+module.exports = router;

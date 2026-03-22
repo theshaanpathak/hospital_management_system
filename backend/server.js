@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 
@@ -8,6 +9,9 @@ const app = express(); // ✅ MUST come first
 // ----------------------
 app.use(cors());
 app.use(express.json());
+
+// ✅ ADD THIS (serve uploaded files)
+app.use('/uploads', express.static('uploads'));
 
 // ----------------------
 // GLOBAL REQUEST LOGGER
@@ -36,7 +40,7 @@ const authRoutes = require('./routes/authRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
-const slotRoutes = require('./routes/slotRoutes'); // ✅ moved here correctly
+const slotRoutes = require('./routes/slotRoutes');
 
 // ----------------------
 // Debug Route Loading
@@ -56,7 +60,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patient', patientRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
-app.use('/api/slots', slotRoutes); // ✅ FIXED POSITION
+app.use('/api/slots', slotRoutes);
 
 // ----------------------
 // TEST ROUTE
@@ -89,3 +93,4 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+

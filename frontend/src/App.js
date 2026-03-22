@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './pages/Login';
@@ -5,13 +6,13 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import DoctorSlots from './pages/DoctorSlots';
+import DoctorSessions from './pages/DoctorSessions'; // ✅ ADDED
 import AdminDashboard from './pages/AdminDashboard';
 
-// 🔐 Protected Route (FIXED)
+// 🔐 Protected Route (same)
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
 
-  // ❌ Only check token
   if (!token) {
     return <Navigate to="/" />;
   }
@@ -44,6 +45,16 @@ function App() {
           element={
             <ProtectedRoute>
               <DoctorDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ✅ FIX: SESSIONS ROUTE */}
+        <Route
+          path="/doctor/sessions"
+          element={
+            <ProtectedRoute>
+              <DoctorSessions />
             </ProtectedRoute>
           }
         />
