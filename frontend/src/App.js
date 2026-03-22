@@ -7,14 +7,18 @@ import Dashboard from './pages/Dashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import DoctorSlots from './pages/DoctorSlots';
 import DoctorSessions from './pages/DoctorSessions';
-import PatientSessions from './pages/PatientSessions'; // ✅ ADDED
+import PatientSessions from './pages/PatientSessions';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
+import DoctorProfile from './pages/DoctorProfile';
+import DoctorsList from './pages/DoctorsList'; // ✅ ADDED
 
-// 🔐 Protected Route (same)
+// 🔐 Protected Route
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
+  const isAdmin = localStorage.getItem('admin') === 'true';
 
-  if (!token) {
+  if (!token && !isAdmin) {
     return <Navigate to="/" />;
   }
 
@@ -29,6 +33,7 @@ function App() {
         {/* PUBLIC */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* PATIENT */}
         <Route
@@ -40,12 +45,21 @@ function App() {
           }
         />
 
-        {/* ✅ ADDED: PATIENT SESSIONS */}
         <Route
           path="/patient-sessions"
           element={
             <ProtectedRoute>
               <PatientSessions />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ✅ ADDED: DOCTORS LIST */}
+        <Route
+          path="/doctors-list"
+          element={
+            <ProtectedRoute>
+              <DoctorsList />
             </ProtectedRoute>
           }
         />
@@ -74,6 +88,15 @@ function App() {
           element={
             <ProtectedRoute>
               <DoctorSlots />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/doctor/profile"
+          element={
+            <ProtectedRoute>
+              <DoctorProfile />
             </ProtectedRoute>
           }
         />

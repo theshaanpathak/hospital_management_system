@@ -37,6 +37,10 @@ function Sidebar({ logout }) {
             <li className={isActive('/patient-sessions') ? 'active' : ''}>
               <Link to="/patient-sessions">📋 Sessions</Link>
             </li>
+
+            <li className={isActive('/doctors-list') ? 'active' : ''}>
+              <Link to="/doctors-list">👨‍⚕️ Doctors</Link>
+            </li>
           </>
         )}
 
@@ -56,6 +60,9 @@ function Sidebar({ logout }) {
             {/* existing */}
             <li className={isActive('/doctor-slots') ? 'active' : ''}>
               <Link to="/doctor-slots">⏰ Manage Slots</Link>
+            </li>
+            <li className={isActive('/doctor/profile') ? 'active' : ''}>
+              <Link to="/doctor/profile">👤 Profile</Link>
             </li>
           </>
         )}

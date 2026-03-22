@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 22, 2026 at 09:27 PM
+-- Generation Time: Mar 22, 2026 at 10:43 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `appointments` (
   `id` int(11) NOT NULL,
-  `patient_id` int(11) DEFAULT NULL,
+  `patient_id` int(11) NOT NULL,
   `doctor_id` int(11) DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   `status` enum('pending','approved','rejected') DEFAULT 'pending',
@@ -41,20 +41,8 @@ CREATE TABLE `appointments` (
 --
 
 INSERT INTO `appointments` (`id`, `patient_id`, `doctor_id`, `date`, `status`, `slot_id`) VALUES
-(3, 1, 1, '2026-12-22 16:52:00', 'approved', NULL),
-(4, 1, 1, '2026-12-31 00:15:00', 'approved', NULL),
-(5, 1, 1, '2026-09-09 02:38:00', 'approved', NULL),
-(6, 1, 1, '2026-02-22 16:52:00', 'rejected', NULL),
-(7, 1, 1, '2026-04-20 05:41:00', 'approved', 1),
-(8, 1, 1, '2026-05-22 11:14:00', 'rejected', 2),
-(9, 1, 1, '2026-03-05 16:52:00', 'rejected', 5),
-(10, 1, 1, '2026-04-22 16:52:00', 'rejected', 3),
-(11, 1, 1, '2222-02-22 16:52:00', 'rejected', 6),
-(12, 1, 1, '2222-12-22 16:32:00', 'rejected', 4),
-(13, 1, 1, '2026-03-19 16:52:00', 'approved', 7),
-(14, 1, 1, '2026-04-19 23:35:00', 'approved', 8),
-(15, 1, 1, '2026-02-21 23:14:00', 'approved', 11),
-(16, 2, 1, '2027-02-22 22:34:00', 'approved', 12);
+(18, 6, 5, '2026-04-24 04:40:00', 'approved', 14),
+(19, 7, 6, '2026-04-30 06:42:00', 'approved', 15);
 
 -- --------------------------------------------------------
 
@@ -76,10 +64,8 @@ CREATE TABLE `appointment_details` (
 --
 
 INSERT INTO `appointment_details` (`id`, `appointment_id`, `notes`, `prescription`, `attachment`, `created_at`) VALUES
-(1, 4, 'dd', 'dd', '1774202711974-Patient management.pdf', '2026-03-22 17:11:58'),
-(2, 3, 'ss', '', '1774202835817-Patient management.pdf', '2026-03-22 17:12:02'),
-(3, 13, 'u', NULL, NULL, '2026-03-22 17:20:36'),
-(4, 5, 'Hello World', 'World', '1774202518588-1st-merged-compressed.pdf', '2026-03-22 18:01:58');
+(7, 18, 'Succesful', 'Success', NULL, '2026-03-22 21:38:06'),
+(8, 19, 'sss', 'sss', NULL, '2026-03-22 21:43:28');
 
 -- --------------------------------------------------------
 
@@ -90,15 +76,20 @@ INSERT INTO `appointment_details` (`id`, `appointment_id`, `notes`, `prescriptio
 CREATE TABLE `doctors` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
-  `specialization` varchar(100) DEFAULT NULL
+  `specialization` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `experience` int(11) DEFAULT NULL,
+  `qualification` varchar(255) DEFAULT NULL,
+  `bio` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `doctors`
 --
 
-INSERT INTO `doctors` (`id`, `user_id`, `specialization`) VALUES
-(1, 2, 'Surgeon');
+INSERT INTO `doctors` (`id`, `user_id`, `specialization`, `phone`, `experience`, `qualification`, `bio`) VALUES
+(5, 12, 'Surgeon', '9954722335', 12, 'MBBS', 'Hello World'),
+(6, 13, 'Dentist', '9707516773', 16, 'MBBS, PG', 'Success');
 
 -- --------------------------------------------------------
 
@@ -119,9 +110,8 @@ CREATE TABLE `doctor_slots` (
 --
 
 INSERT INTO `doctor_slots` (`id`, `doctor_id`, `slot_time`, `is_booked`, `created_at`) VALUES
-(8, 1, '2026-04-19 23:35:00', 1, '2026-03-22 18:12:56'),
-(11, 1, '2026-02-21 23:14:00', 1, '2026-03-22 18:14:36'),
-(12, 1, '2027-02-22 22:34:00', 1, '2026-03-22 18:22:27');
+(14, 5, '2026-04-24 04:40:00', 1, '2026-03-22 21:37:21'),
+(15, 6, '2026-04-30 06:42:00', 1, '2026-03-22 21:42:53');
 
 -- --------------------------------------------------------
 
@@ -141,8 +131,8 @@ CREATE TABLE `patients` (
 --
 
 INSERT INTO `patients` (`id`, `user_id`, `age`, `gender`) VALUES
-(1, 3, 23, 'male'),
-(2, 4, 25, 'Male');
+(6, 11, 20, 'Male'),
+(7, 14, 20, 'Male');
 
 -- --------------------------------------------------------
 
@@ -163,10 +153,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
-(1, 'prasu', 'gpt@gmail.com', '$2b$10$tI2m59HRHSzfSfElWVIhKO0X9se04ZI2YJSP7ng1WxdzZJKyg/vEe', NULL),
-(2, 'Bishal', 'gptdrona@gmail.com', '$2b$10$nX1aitbMGxa9XWAgnDFozOkX.XXKBStWNe5RdPxXsbG28GprHmJB6', 'doctor'),
-(3, 'Raj', 'raj@gmail.com', '$2b$10$by/9lNQzBHh5/4IWsPS5ueDcjTL.BOirb1h7oiS5QfDYm/D1LUvRC', 'patient'),
-(4, 'Mukesh', 'mukesh@gmail.com', '$2b$10$n4fLC81pg0bxlzyC2v15Ne3uCC3GbxCL/Bo8WUT2wY9LRcOf.ITIG', 'patient');
+(11, 'Raj', 'raj@gmail.com', '$2b$10$DzJjVorOYOQSqaRcukK3n.Kd64BOfLDQrhi4I80mnZX9U0uPzmRLy', 'patient'),
+(12, 'Bishal', 'gptdrona@gmail.com', '$2b$10$KFlxTIaK9PPFC.ocEfC7rO7AOxI9bCyx3IqQ/q7fguGVTuPd7jLAi', 'doctor'),
+(13, 'Prachurjya', 'prasu@gmail.com', '$2b$10$SIcDZNw33EEG8/5.mzkNsegIIPX1QFIN3nu7iNCDu3SCnM6NUf2YG', 'doctor'),
+(14, 'Mukesh', 'mukesh@gmail.com', '$2b$10$7byyBtnEmvzTZztG96C4hORVs4s5A8QcUU9pDt72dnF7xbl15xzlW', 'patient');
 
 --
 -- Indexes for dumped tables
@@ -176,7 +166,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
 -- Indexes for table `appointments`
 --
 ALTER TABLE `appointments`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_patient` (`patient_id`);
 
 --
 -- Indexes for table `appointment_details`
@@ -196,7 +187,8 @@ ALTER TABLE `doctors`
 -- Indexes for table `doctor_slots`
 --
 ALTER TABLE `doctor_slots`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_doctor_slots` (`doctor_id`);
 
 --
 -- Indexes for table `patients`
@@ -219,41 +211,47 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `appointment_details`
 --
 ALTER TABLE `appointment_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `doctors`
 --
 ALTER TABLE `doctors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `doctor_slots`
 --
 ALTER TABLE `doctor_slots`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `patients`
 --
 ALTER TABLE `patients`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `appointments`
+--
+ALTER TABLE `appointments`
+  ADD CONSTRAINT `fk_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `appointment_details`
@@ -266,6 +264,12 @@ ALTER TABLE `appointment_details`
 --
 ALTER TABLE `doctors`
   ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `doctor_slots`
+--
+ALTER TABLE `doctor_slots`
+  ADD CONSTRAINT `fk_doctor_slots` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `patients`
