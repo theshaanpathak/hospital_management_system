@@ -28,9 +28,16 @@ function Sidebar({ logout }) {
 
         {/* PATIENT */}
         {role === 'patient' && (
-          <li className={isActive('/dashboard') ? 'active' : ''}>
-            <Link to="/dashboard">🏠 Dashboard</Link>
-          </li>
+          <>
+            <li className={isActive('/dashboard') ? 'active' : ''}>
+              <Link to="/dashboard">🏠 Dashboard</Link>
+            </li>
+
+            {/* ✅ ADDED: Patient Sessions */}
+            <li className={isActive('/patient-sessions') ? 'active' : ''}>
+              <Link to="/patient-sessions">📋 Sessions</Link>
+            </li>
+          </>
         )}
 
         {/* DOCTOR */}

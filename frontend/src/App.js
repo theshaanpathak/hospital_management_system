@@ -6,7 +6,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import DoctorSlots from './pages/DoctorSlots';
-import DoctorSessions from './pages/DoctorSessions'; // ✅ ADDED
+import DoctorSessions from './pages/DoctorSessions';
+import PatientSessions from './pages/PatientSessions'; // ✅ ADDED
 import AdminDashboard from './pages/AdminDashboard';
 
 // 🔐 Protected Route (same)
@@ -39,6 +40,16 @@ function App() {
           }
         />
 
+        {/* ✅ ADDED: PATIENT SESSIONS */}
+        <Route
+          path="/patient-sessions"
+          element={
+            <ProtectedRoute>
+              <PatientSessions />
+            </ProtectedRoute>
+          }
+        />
+
         {/* DOCTOR */}
         <Route
           path="/doctor-dashboard"
@@ -49,7 +60,6 @@ function App() {
           }
         />
 
-        {/* ✅ FIX: SESSIONS ROUTE */}
         <Route
           path="/doctor/sessions"
           element={
@@ -87,3 +97,4 @@ function App() {
 }
 
 export default App;
+
