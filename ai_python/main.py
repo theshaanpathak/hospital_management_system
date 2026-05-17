@@ -37,7 +37,7 @@ app.add_middleware(
 )
 
 # JWT Signing Secret
-JWT_SECRET = "mysecretkey"
+JWT_SECRET = os.getenv("JWT_SECRET")
 
 # In-Memory Conversational Memory (User ID -> Message History)
 CONVERSATION_MEMORY: Dict[int, List[Dict[str, str]]] = {}
@@ -53,15 +53,20 @@ class ChatQuery(BaseModel):
 # ---------------------------------------------------------
 def get_user_from_token(authorization: Optional[str] = Header(None)) -> Dict[str, Any]:
     """Decodes JWT and injects user identity."""
+    print(f"🔑 DEBUG AUTH: Received Authorization Header: {authorization}")
     if not authorization:
+        print("🔑 DEBUG AUTH: Missing authorization header!")
         raise HTTPException(status_code=401, detail="Missing Authorization Header")
         
     try:
         # Standard format: 'Bearer <token>'
         token = authorization.split(" ")[1] if " " in authorization else authorization
+        print(f"🔑 DEBUG AUTH: Extracting token: {token[:15]}... [Length: {len(token)}]")
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        print(f"🔑 DEBUG AUTH: Successfully decoded JWT payload: {payload}")
         return payload  # Contains { "id": user_id, "role": user_role }
     except Exception as e:
+        print(f"🔑 DEBUG AUTH: Exception decoding JWT token: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {str(e)}")
 
 def resolve_clinical_ids(db: Session, user: Dict[str, Any]) -> Dict[str, Any]:
