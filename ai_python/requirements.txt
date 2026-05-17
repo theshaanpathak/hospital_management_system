@@ -1,10 +1,23 @@
-fastapi
-uvicorn
-groq
-python-dotenv
-pydantic
-sqlalchemy
-pymysql
-cryptography
-python-multipart
-PyJWT
+# HMS AI Agent Core - Dependencies (Optimized for Python 3.12)
+
+# High-performance ASGI Web Framework & Server
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+
+# LLM Orchestration & Client
+groq>=0.5.0
+
+# Environment and Data Validation (Pydantic v2 compliant)
+python-dotenv>=1.0.1
+pydantic>=2.6.4
+
+# Database Engine & Connectors (SQLAlchemy 2.0+ compliant)
+SQLAlchemy>=2.0.28
+PyMySQL>=1.1.0
+
+# Security, Cryptography & Token Signatures
+cryptography>=42.0.5
+PyJWT>=2.8.0
+
+# File Upload Support
+python-multipart>=0.0.9
