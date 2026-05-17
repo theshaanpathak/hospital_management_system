@@ -1,0 +1,499 @@
+/* ==========================================================================
+   🏥 BHARAT CARE PREMIUM DASHBOARD SIDEBAR STYLESHEET
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --sidebar-expanded-width: 260px;
+  --sidebar-collapsed-width: 76px;
+  --sidebar-bg: rgba(11, 15, 25, 0.95);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --nav-hover-bg: rgba(255, 255, 255, 0.04);
+  --active-glow-color: rgba(99, 102, 241, 0.15);
+  
+  --patient-color: #10b981;
+  --doctor-color: #3b82f6;
+  --admin-color: #a855f7;
+}
+
+.premium-sidebar {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  width: var(--sidebar-expanded-width);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  color: #94a3b8;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+}
+
+/* Collapsed State Modifications */
+.premium-sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* ==========================================================================
+   1. HEADER SECTION (LOGO)
+   ========================================================================== */
+.sidebar-header {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--sidebar-border);
+  position: relative;
+}
+
+.premium-sidebar.collapsed .sidebar-header {
+  padding: 0;
+  justify-content: center;
+}
+
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-neon-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+  transition: all 0.3s ease;
+}
+
+.logo-neon-ring:hover {
+  transform: rotate(15deg);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.logo-svg {
+  animation: heartPulse 2s infinite ease-in-out;
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.logo-brand {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+  color: #f8fafc;
+}
+
+.logo-brand .text-glow {
+  background: linear-gradient(to right, #818cf8, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Sidebar Collapse toggle switch arrow button */
+.collapse-switch-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: absolute;
+  right: -12px;
+  top: 24px;
+  z-index: 1050;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.collapse-switch-btn:hover {
+  background: #334155;
+  color: white;
+  transform: scale(1.05);
+}
+
+.premium-sidebar.collapsed .collapse-switch-btn {
+  display: none; /* Hide toggle switch when collapsed to keep sidebar tidy */
+}
+
+/* ==========================================================================
+   2. USER PROFILE WIDGET
+   ========================================================================== */
+.user-profile-widget {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border-bottom: 1px solid var(--sidebar-border);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.premium-sidebar.collapsed .user-profile-widget {
+  padding: 15px 0;
+  justify-content: center;
+}
+
+.user-avatar-shell {
+  position: relative;
+  width: 42px;
+  height: 42px;
+}
+
+.user-initial-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: #f8fafc;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #818cf8, #a78bfa);
+  opacity: 0.15;
+  z-index: -1;
+  filter: blur(2px);
+}
+
+.user-pulse-status {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #0b0f19;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseGreen 2.5s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.user-details-box {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f1f5f9;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.profile-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.badge-patient {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--patient-color);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-doctor {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--doctor-color);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge-admin {
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--admin-color);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+/* ==========================================================================
+   3. NAVIGATION GROUPS & SCROLL AREA
+   ========================================================================== */
+.navigation-scroll-area {
+  flex-grow: 1;
+  padding: 20px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.navigation-scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+.navigation-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.navigation-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.premium-sidebar.collapsed .navigation-scroll-area {
+  padding: 20px 6px;
+}
+
+.nav-group-section {
+  margin-bottom: 24px;
+}
+
+.nav-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 1.5px;
+  padding-left: 12px;
+  margin-bottom: 10px;
+}
+
+.nav-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item-li {
+  margin-bottom: 4px;
+  position: relative;
+}
+
+/* ==========================================================================
+   4. SIDEBAR NAVIGATION LINKS
+   ========================================================================== */
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-nav-link:hover {
+  color: #f1f5f9;
+  background: var(--nav-hover-bg);
+}
+
+.link-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-nav-link:hover .link-icon-container {
+  transform: scale(1.05);
+}
+
+.link-text-label {
+  font-size: 14px;
+  font-weight: 550;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+/* Active Highlight */
+.sidebar-nav-link.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-nav-link.active .link-icon-container {
+  color: #818cf8;
+  filter: drop-shadow(0 0 6px rgba(129, 140, 248, 0.5));
+}
+
+/* Premium Special Spark AI Bot Button Highlight */
+.special-ai-link {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+}
+
+.special-ai-link:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: white;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
+}
+
+.special-ai-link .link-icon-container {
+  color: #c084fc;
+}
+
+.ai-spark-pill {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.15);
+  border: 1px solid rgba(244, 114, 182, 0.2);
+  padding: 1px 5px;
+  border-radius: 6px;
+  margin-left: auto;
+}
+
+/* Collapsed Link Alignment */
+.premium-sidebar.collapsed .sidebar-nav-link {
+  justify-content: center;
+  padding: 11px 0;
+  width: 44px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   5. COLLAPSED FLOATING TOOLTIP
+   ========================================================================== */
+.floating-sidebar-tooltip {
+  position: absolute;
+  left: 80px;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1100;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.floating-sidebar-tooltip::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #0f172a;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tooltip Show Triggers on Hover in Collapsed Mode only */
+.premium-sidebar.collapsed .nav-item-li:hover .floating-sidebar-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.danger-tooltip {
+  background: #7f1d1d;
+}
+.danger-tooltip::before {
+  background: #7f1d1d;
+}
+
+/* ==========================================================================
+   6. FOOTER (LOGOUT TRIGGER)
+   ========================================================================== */
+.sidebar-footer {
+  padding: 15px 12px;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.premium-sidebar.collapsed .sidebar-footer {
+  padding: 15px 6px;
+}
+
+.logout-trigger-btn {
+  border: none;
+}
+
+.logout-trigger-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ==========================================================================
+   7. RESPONSIVENESS AND MOBILE DRAWERS
+   ========================================================================== */
+
+/* Mobile dimmer backdrop overlay */
+.sidebar-dimmer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1030;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-dimmer.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media(max-width: 991.98px) {
+  /* On mobile layout: Sidebar starts completely hidden off-canvas */
+  .premium-sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-expanded-width) !important; /* Force expand layout inside mobile slide-out */
+  }
+
+  .premium-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .collapse-switch-btn {
+    display: none !important;
+  }
+}

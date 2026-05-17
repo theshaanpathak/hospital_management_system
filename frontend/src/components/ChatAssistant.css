@@ -1,0 +1,478 @@
+/* Premium Chat Assistant Stylings with Glassmorphism & Neon Scanners */
+
+:root {
+  --color-patient-primary: #10b981;
+  --color-patient-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --color-doctor-primary: #2563eb;
+  --color-doctor-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --color-admin-primary: #8b5cf6;
+  --color-admin-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --color-bg-glass: rgba(255, 255, 255, 0.92);
+  --color-border-glass: rgba(255, 255, 255, 0.4);
+}
+
+.chat-toggle-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.chat-toggle-btn.patient {
+  background: var(--color-patient-gradient);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+.chat-toggle-btn.doctor {
+  background: var(--color-doctor-gradient);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+}
+
+.chat-toggle-btn.admin {
+  background: var(--color-admin-gradient);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+}
+
+.chat-toggle-btn:hover {
+  transform: scale(1.1) rotate(6deg);
+}
+
+/* Chat Window Wrapper */
+.chat-window {
+  position: fixed;
+  bottom: 100px;
+  right: 25px;
+  width: 420px;
+  height: 700px;
+  max-height: calc(100vh - 130px);
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  z-index: 9998;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid var(--color-border-glass);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.chat-window.minimized {
+  height: 80px;
+  width: 340px;
+}
+
+/* Chat Dynamic Headers */
+.chat-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background 0.3s;
+}
+
+.chat-header.patient {
+  background: linear-gradient(to right, rgba(16, 185, 129, 0.08), rgba(255, 255, 255, 0));
+  border-left: 5px solid var(--color-patient-primary);
+}
+
+.chat-header.doctor {
+  background: linear-gradient(to right, rgba(37, 99, 235, 0.08), rgba(255, 255, 255, 0));
+  border-left: 5px solid var(--color-doctor-primary);
+}
+
+.chat-header.admin {
+  background: linear-gradient(to right, rgba(139, 92, 246, 0.08), rgba(255, 255, 255, 0));
+  border-left: 5px solid var(--color-admin-primary);
+}
+
+.bot-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.bot-avatar.patient { background: #ecfdf5; color: var(--color-patient-primary); }
+.bot-avatar.doctor { background: #eff6ff; color: var(--color-doctor-primary); }
+.bot-avatar.admin { background: #f5f3ff; color: var(--color-admin-primary); }
+
+.online-indicator {
+  font-size: 11px;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+}
+
+.online-indicator::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.header-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1e293b;
+}
+
+/* Message Scrolling Container */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px !important;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.message-wrapper {
+  max-width: 88%;
+  display: flex;
+  flex-direction: column;
+  animation: slideMessage 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideMessage {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.message-wrapper.bot { align-self: flex-start; }
+.message-wrapper.user { align-self: flex-end; }
+
+.message-bubble {
+  padding: 14px 18px;
+  border-radius: 22px;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.bot .message-bubble {
+  background: white;
+  color: #1e293b;
+  border-bottom-left-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.user .message-bubble {
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+
+.user.patient .message-bubble { background: var(--color-patient-gradient); }
+.user.doctor .message-bubble { background: var(--color-doctor-gradient); }
+.user.admin .message-bubble { background: var(--color-admin-gradient); }
+
+.message-time {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 5px;
+  padding: 0 8px;
+  font-weight: 500;
+}
+
+.user .message-time { text-align: right; }
+
+/* Visual Reasoning Steps log */
+.reasoning-container {
+  margin: 4px 0 8px 6px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-left: 2px dashed #94a3b8;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reasoning-title {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reasoning-step {
+  font-size: 11px;
+  color: #475569;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.reasoning-step::before {
+  content: '⚙️';
+}
+
+/* Action Cards rendered in Chat */
+.action-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 14px;
+  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.action-card-header {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-card-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.action-card-btn.primary {
+  background: var(--color-patient-primary);
+  border-color: var(--color-patient-primary);
+  color: white;
+}
+
+.action-card-btn.primary:hover {
+  filter: brightness(0.95);
+}
+
+/* YOLO X-ray neon scanner styles */
+.xray-preview-container {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 260px;
+  margin-top: 8px;
+  border: 2px solid #e2e8f0;
+  background: #000;
+}
+
+.xray-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0.85;
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(16, 185, 129, 0.15);
+  pointer-events: none;
+}
+
+.scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #10b981;
+  box-shadow: 0 0 15px #10b981, 0 0 5px #10b981;
+  animation: scanVertical 2s infinite ease-in-out;
+}
+
+@keyframes scanVertical {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+.scanner-text {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #10b981;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 1px;
+  animation: blinkText 1s infinite;
+}
+
+@keyframes blinkText {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Neon Scan Findings Card */
+.neon-findings-card {
+  border: 2px solid #10b981;
+  background: #f0fdf4;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+/* Input area */
+.chat-input-area {
+  background: white;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 16px 20px !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.input-icon-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.input-icon-btn:hover {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.chat-input-area input {
+  flex: 1;
+  border: 1px solid #f1f5f9;
+  background: #f8fafc;
+  padding: 12px 18px;
+  font-size: 0.94rem;
+  outline: none;
+  border-radius: 16px;
+  transition: all 0.2s;
+}
+
+.chat-input-area input:focus {
+  background: white;
+  border-color: #cbd5e1;
+}
+
+.send-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.send-btn.patient { background: var(--color-patient-gradient); }
+.send-btn.doctor { background: var(--color-doctor-gradient); }
+.send-btn.admin { background: var(--color-admin-gradient); }
+
+.send-btn:disabled {
+  background: #f1f5f9 !important;
+  color: #cbd5e1 !important;
+  cursor: not-allowed;
+}
+
+/* Typing bounce indicator */
+.typing {
+  display: flex;
+  gap: 5px;
+  padding: 14px 18px !important;
+}
+
+.typing .dot {
+  width: 6px;
+  height: 6px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: bounceDot 1.4s infinite ease-in-out both;
+}
+
+.typing .dot:nth-child(1) { animation-delay: -0.32s; }
+.typing .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounceDot {
+  0%, 80%, 100% { transform: scale(0.3); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Collapsible Details styling */
+.scan-details-box {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #475569;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .chat-window {
+    width: 100%;
+    height: 100%;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+}

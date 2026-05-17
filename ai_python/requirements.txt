@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+groq
+python-dotenv
+pydantic
+sqlalchemy
+pymysql
+cryptography
+python-multipart
+PyJWT
